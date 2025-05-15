@@ -2,13 +2,11 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract NoemaIP is ERC721URIStorage, Ownable, ReentrancyGuard {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+    uint256 private _nextTokenId;
 
     struct IPAsset {
         string title;
@@ -29,7 +27,7 @@ contract NoemaIP is ERC721URIStorage, Ownable, ReentrancyGuard {
     event LicenseGranted(uint256 indexed tokenId, address indexed licensee, uint256 fee);
     event LicenseRevoked(uint256 indexed tokenId, address indexed licensee);
 
-    constructor() ERC721("NoemaIP", "NOEMA") {}
+    constructor() ERC721("NoemaIP", "NOEMA") Ownable(msg.sender) {}
 
     function createIPAsset(
         string memory title,
@@ -39,13 +37,11 @@ contract NoemaIP is ERC721URIStorage, Ownable, ReentrancyGuard {
         uint256 licenseFee,
         string memory licenseTerms
     ) public nonReentrant returns (uint256) {
-        _tokenIds.increment();
-        uint256 newTokenId = _tokenIds.current();
+        uint256 tokenId = _nextTokenId++;
+        _mint(msg.sender, tokenId);
+        _setTokenURI(tokenId, tokenURI);
 
-        _mint(msg.sender, newTokenId);
-        _setTokenURI(newTokenId, tokenURI);
-
-        ipAssets[newTokenId] = IPAsset({
+        ipAssets[tokenId] = IPAsset({
             title: title,
             description: description,
             category: category,
@@ -56,14 +52,14 @@ contract NoemaIP is ERC721URIStorage, Ownable, ReentrancyGuard {
             licenseTerms: licenseTerms
         });
 
-        creatorAssets[msg.sender].push(newTokenId);
+        creatorAssets[msg.sender].push(tokenId);
 
-        emit IPAssetCreated(newTokenId, msg.sender, title);
-        return newTokenId;
+        emit IPAssetCreated(tokenId, msg.sender, title);
+        return tokenId;
     }
 
     function grantLicense(uint256 tokenId) public payable nonReentrant {
-        require(_exists(tokenId), "IP asset does not exist");
+        require(ownerOf(tokenId) != address(0), "IP asset does not exist");
         require(msg.value >= ipAssets[tokenId].licenseFee, "Insufficient license fee");
         
         address creator = ownerOf(tokenId);
@@ -79,7 +75,7 @@ contract NoemaIP is ERC721URIStorage, Ownable, ReentrancyGuard {
     }
 
     function revokeLicense(uint256 tokenId, address licensee) public {
-        require(_exists(tokenId), "IP asset does not exist");
+        require(ownerOf(tokenId) != address(0), "IP asset does not exist");
         require(ownerOf(tokenId) == msg.sender, "Not the IP owner");
         
         address[] storage currentLicensees = licensees[tokenId];
@@ -95,7 +91,7 @@ contract NoemaIP is ERC721URIStorage, Ownable, ReentrancyGuard {
     }
 
     function getIPAsset(uint256 tokenId) public view returns (IPAsset memory) {
-        require(_exists(tokenId), "IP asset does not exist");
+        require(ownerOf(tokenId) != address(0), "IP asset does not exist");
         return ipAssets[tokenId];
     }
 
@@ -104,7 +100,7 @@ contract NoemaIP is ERC721URIStorage, Ownable, ReentrancyGuard {
     }
 
     function getLicensees(uint256 tokenId) public view returns (address[] memory) {
-        require(_exists(tokenId), "IP asset does not exist");
+        require(ownerOf(tokenId) != address(0), "IP asset does not exist");
         return licensees[tokenId];
     }
 }
