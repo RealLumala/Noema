@@ -46,7 +46,7 @@ contract NoemaIPTest is Test {
         assertEq(asset.licenseFee, LICENSE_FEE);
         assertEq(asset.licenseTerms, "Test License Terms");
         assertEq(noemaIP.ownerOf(tokenId), creator);
-
+        
         vm.stopPrank();
     }
 
@@ -66,10 +66,10 @@ contract NoemaIPTest is Test {
         vm.expectEmit(true, true, true, true);
         emit LicenseGranted(tokenId, licensee, LICENSE_FEE);
         noemaIP.grantLicense{value: LICENSE_FEE}(tokenId);
-
+        
         NoemaIP.IPAsset memory asset = noemaIP.getIPAsset(tokenId);
         assertEq(asset.isLicensed, true);
-
+        
         address[] memory licensees = noemaIP.getLicensees(tokenId);
         assertEq(licensees.length, 1);
         assertEq(licensees[0], licensee);
@@ -96,7 +96,7 @@ contract NoemaIPTest is Test {
         vm.expectEmit(true, true, true, true);
         emit LicenseRevoked(tokenId, licensee);
         noemaIP.revokeLicense(tokenId, licensee);
-
+        
         address[] memory licensees = noemaIP.getLicensees(tokenId);
         assertEq(licensees.length, 0);
         vm.stopPrank();
