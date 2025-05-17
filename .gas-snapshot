@@ -1,0 +1,7 @@
+NoemaIPTest:testFail_GrantLicenseInsufficientFee() (gas: 310959)
+NoemaIPTest:testFail_GrantLicenseToSelf() (gas: 308315)
+NoemaIPTest:testFail_RevokeLicenseNotOwner() (gas: 388757)
+NoemaIPTest:test_CreateIPAsset() (gas: 309085)
+NoemaIPTest:test_GetCreatorAssets() (gas: 534755)
+NoemaIPTest:test_GrantLicense() (gas: 396290)
+NoemaIPTest:test_RevokeLicense() (gas: 352569)
