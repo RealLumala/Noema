@@ -53,3 +53,5 @@ This system provides a decentralized way to:
 - Maintain transparency in IP transactions
 
 This is a secure, transparent, and automated system for IP management on the blockchain.
+
+To be revisited soon.
